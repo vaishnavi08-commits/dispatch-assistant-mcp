@@ -3,7 +3,7 @@
 An MCP server that helps grocery delivery dispatchers keep orders on time. Inspired by Buncher, an escalation system I designed in production at Buncha. All data here is fictional.
 
 
-## Demo (68 sec)
+## Demo (27 sec)
 [Watch the demo](docs/dispatch-assistant-demo.mp4). In Claude Desktop, Claude finds the at-risk orders and checks which shoppers are free. When asked to send 3 orders over $150 to the delivery partner, the guardrail holds them for human approval.
 
 ## Tools
