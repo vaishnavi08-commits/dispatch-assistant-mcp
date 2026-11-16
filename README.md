@@ -29,7 +29,7 @@ Add to `claude_desktop_config.json` (use your own full paths):
 ```json
 {
   "mcpServers": {
-    "dispatch-assistant": {
+    "grocery-dispatch": {
       "command": "/FULL/PATH/venv/bin/python",
       "args": ["-m", "dispatch_mcp.server"],
       "cwd": "/FULL/PATH/dispatch-assistant-mcp"

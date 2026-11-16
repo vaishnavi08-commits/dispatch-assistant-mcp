@@ -3,7 +3,7 @@ from mcp.server.fastmcp import FastMCP
 from .tools import TOOLS
 from .db import DB_PATH, seed
 
-mcp = FastMCP("dispatch-assistant")
+mcp = FastMCP("grocery-dispatch")
 for fn in TOOLS:
     mcp.tool()(fn)
 

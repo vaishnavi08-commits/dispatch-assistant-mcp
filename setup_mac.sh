@@ -25,13 +25,13 @@ mkdir -p "$(dirname "$CFG")"
 import json, sys, os
 cfg, root = sys.argv[1], sys.argv[2]
 data = json.load(open(cfg)) if os.path.exists(cfg) and os.path.getsize(cfg) else {}
-data.setdefault("mcpServers", {})["dispatch-assistant"] = {
+data.setdefault("mcpServers", {})["grocery-dispatch"] = {
     "command": f"{root}/venv/bin/python",
     "args": ["-m", "dispatch_mcp.server"],
     "cwd": root,
     "env": {"PYTHONPATH": root},
 }
 json.dump(data, open(cfg, "w"), indent=2)
-print("Registered 'dispatch-assistant' in", cfg)
+print("Registered 'grocery-dispatch' in", cfg)
 EOF
 echo "Done. Quit Claude Desktop fully (Cmd+Q) and reopen it."
