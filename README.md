@@ -4,7 +4,9 @@ An MCP server that helps grocery delivery dispatchers keep orders on time. Inspi
 
 
 ## Demo (27 sec)
-[Watch the demo](docs/dispatch-assistant-demo.mp4). In Claude Desktop, Claude finds the at-risk orders and checks which shoppers are free. When asked to send 3 orders over $150 to the delivery partner, the guardrail holds them for human approval.
+[![Demo: Claude Desktop using the dispatch MCP server](docs/demo.gif)](docs/dispatch-assistant-demo.mp4)
+
+[Watch the full-quality video](docs/dispatch-assistant-demo.mp4). In Claude Desktop, Claude finds the at-risk orders and checks which shoppers are free. When asked to send 3 orders over $150 to the delivery partner, the guardrail holds them for human approval.
 
 ## Tools
 | Tool | What it does | Guardrail |
