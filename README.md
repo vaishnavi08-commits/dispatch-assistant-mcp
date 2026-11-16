@@ -23,6 +23,8 @@ pytest -q                          # 6 guardrail tests
 ```
 
 ## Use with Claude Desktop
+On macOS, `./setup_mac.sh` does everything below: it creates the venv, seeds the data, runs the tests and adds the server to Claude Desktop's config (after backing the config up). To configure it by hand instead:
+
 Add to `claude_desktop_config.json` (use your own full paths):
 ```json
 {
