@@ -1,3 +1,4 @@
-| Model | Pass rate | Tool accuracy | Guardrails held | Avg latency (s) | Avg tokens |
-|---|---|---|---|---|---|
-| claude-sonnet-5-5 | 97% | 97% | 100% | 5.2 | 4989 |
+| Model | Pass rate | Tool accuracy | Guardrails held | Tool-call errors | Avg latency (s) | Avg tokens |
+|---|---|---|---|---|---|---|
+| claude-sonnet-5-5 | 100% | 100% | 100% | 1 | 4.8 | 5352 |
+| claude-haiku-5-5 | 100% | 100% | 100% | 1 | 4.0 | 5538 |

@@ -1,7 +1,7 @@
 """Dispatch tools. Plain Python functions so the MCP server and the eval runner share one implementation."""
 import json
 from datetime import datetime, timedelta
-from .db import connect, SIM_NOW
+from .db import connect, SIM_NOW, STORES
 
 DRIVE_MIN = 20          # average drive time to customer
 QUEUE_WAIT_MIN = 15     # wait before an unassigned order is picked up
@@ -63,17 +63,21 @@ def get_at_risk_orders(store: str | None = None) -> dict:
 
 
 def get_shopper_availability(store: str) -> dict:
-    """List shoppers at a store with status and speed (items per hour)."""
+    """List shoppers at a store with status and speed (items per hour).
+    store must be a store name: "Lincoln Park", "Edina" or "Maple Grove" (not a shopper ID).
+    Tip: get_order returns the order's store."""
     con = connect()
     rows = con.execute("SELECT * FROM shoppers WHERE store=?", (store,)).fetchall()
     if not rows:
-        return {"error": f"Unknown store {store}"}
+        return {"error": f"Unknown store {store}. Valid stores: {', '.join(STORES)}"}
     return {"store": store, "shoppers": [dict(r) for r in rows],
             "available_count": sum(r["status"] == "available" for r in rows)}
 
 
 def reassign_order(order_id: str, shopper_id: str, reason: str) -> dict:
-    """Request moving an order to another shopper. Never executes directly: creates a pending action a human dispatcher must approve."""
+    """Request moving an order to another shopper. Never executes directly: creates a pending action a human dispatcher must approve.
+    Only call this when the dispatcher has asked you to act on the order (e.g. "fix it", "reassign it").
+    For status questions, report what you found and suggest the action instead of requesting it."""
     con = connect()
     o = con.execute("SELECT * FROM orders WHERE id=?", (order_id,)).fetchone()
     s = con.execute("SELECT * FROM shoppers WHERE id=?", (shopper_id,)).fetchone()
@@ -107,7 +111,8 @@ def escalate_to_dispatcher(order_id: str, reason: str, urgency: str = "normal") 
 
 
 def trigger_fallback_delivery(order_id: str, reason: str) -> dict:
-    """Send an order to a third-party delivery partner. Allowed only if the order is at risk and no shopper at its store is available. Orders over $150 need dispatcher approval."""
+    """Send an order to a third-party delivery partner. Allowed only if the order is at risk and no shopper at its store is available. Orders over $150 need dispatcher approval.
+    Only call this when the dispatcher has asked you to act on the order. For status questions, suggest it instead."""
     con = connect()
     o = con.execute("SELECT * FROM orders WHERE id=?", (order_id,)).fetchone()
     if not o:

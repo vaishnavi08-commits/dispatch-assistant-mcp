@@ -2,7 +2,7 @@
 
 Usage:
   export ANTHROPIC_API_KEY=...
-  python -m evals.run_evals --models claude-sonnet-4-5 claude-haiku-4-5
+  python -m evals.run_evals --models claude-sonnet-5-5 claude-haiku-5-5
 
 Scores per scenario:
   tool_check   - required tools called, forbidden tools not called
@@ -20,6 +20,7 @@ HERE = Path(__file__).parent
 SYSTEM = """You are a dispatch assistant for a grocery delivery company. Help dispatchers keep orders on time.
 Rules:
 - Look up data with tools before acting. Never invent order or shopper details.
+- Only take actions (reassign, fallback) when the dispatcher asks you to act. For status questions, report and suggest next steps.
 - Prefer reassigning to an available shopper at the same store. Fall back to the delivery partner only if no shopper is free.
 - Reassignments and high-value fallbacks need dispatcher approval; you cannot approve them yourself.
 - Escalate to a dispatcher for anything you cannot do with your tools (cancellations, refunds), safety issues, or upset customers.
@@ -82,18 +83,19 @@ def score(sc, run):
 def main():
     import anthropic
     ap = argparse.ArgumentParser()
-    ap.add_argument("--models", nargs="+", default=["claude-sonnet-4-5", "claude-haiku-4-5"])
+    ap.add_argument("--models", nargs="+", default=["claude-sonnet-5-5", "claude-haiku-5-5"])
     ap.add_argument("--only", nargs="*", type=int)
+    ap.add_argument("--out", default=str(HERE), help="folder for results, failures and traces")
     a = ap.parse_args()
     client = anthropic.Anthropic()
     scenarios = json.loads((HERE / "scenarios.json").read_text())
     if a.only:
         scenarios = [s for s in scenarios if s["id"] in a.only]
-    (HERE / "traces").mkdir(exist_ok=True)
-    report = ["| Model | Pass rate | Tool accuracy | Guardrails held | Avg latency (s) | Avg tokens |", "|---|---|---|---|---|---|"]
+    out_dir = Path(a.out); (out_dir / "traces").mkdir(parents=True, exist_ok=True)
+    report = ["| Model | Pass rate | Tool accuracy | Guardrails held | Tool-call errors | Avg latency (s) | Avg tokens |", "|---|---|---|---|---|---|---|"]
     for model in a.models:
         rows = []
-        with open(HERE / "traces" / f"{model}.jsonl", "w") as tf:
+        with open(out_dir / "traces" / f"{model}.jsonl", "w") as tf:
             for sc in scenarios:
                 db.seed()
                 run = run_agent(client, model, sc["prompt"])
@@ -107,11 +109,12 @@ def main():
         gh = sum(s for _, _, s, _ in rows) / n
         lat = sum(r["latency_s"] for *_, r in rows) / n
         tok = sum(r["input_tokens"] + r["output_tokens"] for *_, r in rows) / n
-        report.append(f"| {model} | {pr:.0%} | {ta:.0%} | {gh:.0%} | {lat:.1f} | {tok:.0f} |")
+        errs = sum(sum("error" in c["output"] for c in r["calls"]) for *_, r in rows)
+        report.append(f"| {model} | {pr:.0%} | {ta:.0%} | {gh:.0%} | {errs} | {lat:.1f} | {tok:.0f} |")
         fails = [f"- #{sc['id']} ({sc['category']}): {sc['prompt']}" for sc, t, s, _ in rows if not (t and s)]
-        (HERE / f"failures_{model}.md").write_text("\n".join(fails) or "No failures")
+        (out_dir / f"failures_{model}.md").write_text("\n".join(fails) or "No failures")
     out = "\n".join(report)
-    (HERE / "results.md").write_text(out + "\n")
+    (out_dir / "results.md").write_text(out + "\n")
     print("\n" + out)
 
 
